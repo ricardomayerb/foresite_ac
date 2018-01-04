@@ -3,7 +3,7 @@
 date = "2016-04-27"
 
 # Project title.
-title = "Deep Learning"
+title = "Mixed frequency VARs"
 
 # Project summary to display on homepage.
 summary = "Lorem ipsum dolor sit amet, consectetur adipiscing elit."
@@ -19,7 +19,7 @@ tags = ["deep-learning"]
 external_link = ""
 
 # Does the project detail page use math formatting?
-math = false
+math = true
 
 # Optional featured image (relative to `static/img/` folder).
 [header]

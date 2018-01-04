@@ -1,0 +1,343 @@
+---
+title: Relative accuracy of bridge-sarimax vs simplest VAR for brazilian GDP
+author: Ricardo Mayer
+date: '2017-12-26'
+slug: relative-accuracy-of-bridge-sarimax-vs-simplest-var-for-brazilian-gdp
+categories:
+  - comparison
+  - stata
+tags:
+  - accuracy
+  - sarimax
+  - VAR
+---
+
+
+
+<p>Here is a <strong>very</strong> rudimentary comparison of out-sample forecast accuracy between our current bridge-sarimax implementation and a balanced-data VAR (see here: sarimax and var). Specifically, we use data from Brazil to forecast real GDP growth and use realized and forecasted values several steps ahead to compute frequently used accuracy measures: RMSE, MAE, MASE and Theil’s U. Since the code involved is written in Stata ans Excel, we cannot re-run those calculation in a R Markdown document and we are limited to just show tables and plots with those results.</p>
+<div id="first-exercise-monthly-data-aligned-with-quarterly-data" class="section level2">
+<h2>First exercise: monthly data aligned with quarterly data</h2>
+<div id="set-up" class="section level3">
+<h3>Set up</h3>
+<ul>
+<li><strong>Data</strong> : quarterly and monthly data for Brazil, curated by Pablo. This vintage includes quarterly real GDP from 1997Q1 to 2017Q3, and monthly data, with some of it up to 2017M10 (that is, one month ahead of GDP). Then we consider four subsamples:
+<ol style="list-style-type: decimal">
+<li>1997Q1 to 2015Q1 (and 2015M3 for monthly variables … more on this later)</li>
+<li>1997Q1 to 2015Q2 (2015M6)</li>
+<li>1997Q1 to 2015Q3 (2015M6)</li>
+<li>1997Q1 to 2016Q1 (2015M6)</li>
+</ol></li>
+<li><strong>Forecasts</strong> : quarterly YoY percentage changes of real gdp (e.g -2.1% for 2016Q2, 1,1% for 2016Q2, etc.). We haven’t touch the sarimax legacy code and by default its forecast horizon is not fixed: it always forecasts up to the 4th quarter of the next year. That means the following set of predictions for each subsample:
+<ol style="list-style-type: decimal">
+<li>2015Q2 to 2016Q4 (7 forecasted values and 7 observations)</li>
+<li>2015Q3 to 2016Q4 (6 forecasted values and 6 observations)</li>
+<li>2015Q4 to 2016Q4 (5 forecasted values and 5 observations)</li>
+<li>2016Q2 to 2017Q4 (7 forecasted values and 6 observations up to 2017Q3)</li>
+</ol></li>
+<li><p><strong>Methods</strong> : bridge-SARIMAX and a combination of six simple balanced-data VARs. These are described in separated posts (see here: sarimax and var)</p></li>
+<li><strong>Accuracy measures</strong> : using out-of-subsample forecasts and actual data on the same period being forecasted, we construct the following statistics
+<ul>
+<li>RMSE</li>
+<li>MAE</li>
+<li>MASE</li>
+<li>Theil’s U</li>
+</ul></li>
+</ul>
+</div>
+<div id="results" class="section level3">
+<h3>Results</h3>
+<p>General comments: Overall, VARs seem to be more robust and reliable. For all but the last test period VARs show smaller forecast errors –in all three measures– than SARIMAX. In that last test period, SARIMAX has a slightly smaller RMSE and is basically tied with VARs regarding MAE and Theil’s U.</p>
+<p>This seems to be because the VARs perform bad in the first two quarters. From h=4,5 and 6 ahead they outperform the SARIMAX. Thus, the longer the test sample, the more opportunities there are for the VAR to outperform the SARIMAX.</p>
+<table class="myTable">
+<caption>
+<span id="tab:unnamed-chunk-2">Table 1: </span>Out-of-sample errors, VAR vs SARIMAX
+</caption>
+<thead>
+<tr>
+<th style="border-bottom:hidden" colspan="1">
+</th>
+<th style="text-align:center; border-bottom:hidden; padding-bottom:0; padding-left:3px;padding-right:3px;" colspan="2">
+<div style="border-bottom: 1px solid #ddd; padding-bottom: 5px;">
+RMSE
+</div>
+</th>
+<th style="text-align:center; border-bottom:hidden; padding-bottom:0; padding-left:3px;padding-right:3px;" colspan="2">
+<div style="border-bottom: 1px solid #ddd; padding-bottom: 5px;">
+MAE
+</div>
+</th>
+<th style="text-align:center; border-bottom:hidden; padding-bottom:0; padding-left:3px;padding-right:3px;" colspan="2">
+<div style="border-bottom: 1px solid #ddd; padding-bottom: 5px;">
+Theil’s U
+</div>
+</th>
+</tr>
+<tr>
+<th style="text-align:center;">
+</th>
+<th style="text-align:center;">
+VAR
+</th>
+<th style="text-align:center;">
+SARIMAX
+</th>
+<th style="text-align:center;">
+VAR
+</th>
+<th style="text-align:center;">
+SARIMAX
+</th>
+<th style="text-align:center;">
+VAR
+</th>
+<th style="text-align:center;">
+SARIMAX
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center;">
+2015Q2:2016Q4
+</td>
+<td style="text-align:center;background-color: #d3d3d3;">
+1.3
+</td>
+<td style="text-align:center;background-color: #d3d3d3;">
+5.0
+</td>
+<td style="text-align:center;">
+1.1
+</td>
+<td style="text-align:center;">
+4.8
+</td>
+<td style="text-align:center;background-color: #d3d3d3;">
+0.4
+</td>
+<td style="text-align:center;background-color: #d3d3d3;">
+1.5
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+2015Q3:2016Q4
+</td>
+<td style="text-align:center;background-color: #d3d3d3;">
+0.8
+</td>
+<td style="text-align:center;background-color: #d3d3d3;">
+2.3
+</td>
+<td style="text-align:center;">
+0.7
+</td>
+<td style="text-align:center;">
+2.3
+</td>
+<td style="text-align:center;background-color: #d3d3d3;">
+0.3
+</td>
+<td style="text-align:center;background-color: #d3d3d3;">
+0.8
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+2015Q4:2016Q4
+</td>
+<td style="text-align:center;background-color: #d3d3d3;">
+0.8
+</td>
+<td style="text-align:center;background-color: #d3d3d3;">
+0.9
+</td>
+<td style="text-align:center;">
+0.7
+</td>
+<td style="text-align:center;">
+2.3
+</td>
+<td style="text-align:center;background-color: #d3d3d3;">
+0.1
+</td>
+<td style="text-align:center;background-color: #d3d3d3;">
+0.2
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+2016Q2:2017Q2
+</td>
+<td style="text-align:center;background-color: #d3d3d3;">
+1.6
+</td>
+<td style="text-align:center;background-color: #d3d3d3;">
+1.5
+</td>
+<td style="text-align:center;">
+1.2
+</td>
+<td style="text-align:center;">
+1.2
+</td>
+<td style="text-align:center;background-color: #d3d3d3;">
+0.5
+</td>
+<td style="text-align:center;background-color: #d3d3d3;">
+0.5
+</td>
+</tr>
+</tbody>
+</table>
+<p>foo</p>
+<table class="table table-striped table-hover table-responsive" style="margin-left: auto; margin-right: auto;">
+<caption>
+<span id="tab:unnamed-chunk-3">Table 2: </span>trying bootstrap options2
+</caption>
+<thead>
+<tr>
+<th style="border-bottom:hidden" colspan="1">
+</th>
+<th style="text-align:center; border-bottom:hidden; padding-bottom:0; padding-left:3px;padding-right:3px;" colspan="2">
+<div style="border-bottom: 1px solid #ddd; padding-bottom: 5px;">
+RMSE
+</div>
+</th>
+<th style="text-align:center; border-bottom:hidden; padding-bottom:0; padding-left:3px;padding-right:3px;" colspan="2">
+<div style="border-bottom: 1px solid #ddd; padding-bottom: 5px;">
+MAE
+</div>
+</th>
+<th style="text-align:center; border-bottom:hidden; padding-bottom:0; padding-left:3px;padding-right:3px;" colspan="2">
+<div style="border-bottom: 1px solid #ddd; padding-bottom: 5px;">
+Theil’s U
+</div>
+</th>
+</tr>
+<tr>
+<th style="text-align:center;">
+</th>
+<th style="text-align:center;">
+VAR
+</th>
+<th style="text-align:center;">
+SARIMAX
+</th>
+<th style="text-align:center;">
+VAR
+</th>
+<th style="text-align:center;">
+SARIMAX
+</th>
+<th style="text-align:center;">
+VAR
+</th>
+<th style="text-align:center;">
+SARIMAX
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center;">
+2015Q2:2016Q4
+</td>
+<td style="text-align:center;">
+1.3
+</td>
+<td style="text-align:center;">
+5.0
+</td>
+<td style="text-align:center;">
+1.1
+</td>
+<td style="text-align:center;">
+4.8
+</td>
+<td style="text-align:center;">
+0.4
+</td>
+<td style="text-align:center;">
+1.5
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+2015Q3:2016Q4
+</td>
+<td style="text-align:center;">
+0.8
+</td>
+<td style="text-align:center;">
+2.3
+</td>
+<td style="text-align:center;">
+0.7
+</td>
+<td style="text-align:center;">
+2.3
+</td>
+<td style="text-align:center;">
+0.3
+</td>
+<td style="text-align:center;">
+0.8
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+2015Q4:2016Q4
+</td>
+<td style="text-align:center;">
+0.8
+</td>
+<td style="text-align:center;">
+0.9
+</td>
+<td style="text-align:center;">
+0.7
+</td>
+<td style="text-align:center;">
+2.3
+</td>
+<td style="text-align:center;">
+0.1
+</td>
+<td style="text-align:center;">
+0.2
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+2016Q2:2017Q2
+</td>
+<td style="text-align:center;">
+1.6
+</td>
+<td style="text-align:center;">
+1.5
+</td>
+<td style="text-align:center;">
+1.2
+</td>
+<td style="text-align:center;">
+1.2
+</td>
+<td style="text-align:center;">
+0.5
+</td>
+<td style="text-align:center;">
+0.5
+</td>
+</tr>
+</tbody>
+</table>
+<style>
+  .myTable td {
+    padding-right: 20px;
+    padding-left: 20px;
+  }
+</style>
+</div>
+</div>

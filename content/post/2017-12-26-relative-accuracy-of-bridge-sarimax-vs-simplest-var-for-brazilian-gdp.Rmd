@@ -1,0 +1,167 @@
+---
+title: Relative accuracy of bridge-sarimax vs simplest VAR for brazilian GDP
+author: Ricardo Mayer
+date: '2017-12-26'
+slug: relative-accuracy-of-bridge-sarimax-vs-simplest-var-for-brazilian-gdp
+categories:
+  - comparison
+  - stata
+tags:
+  - accuracy
+  - sarimax
+  - VAR
+---
+
+
+Here is a **very** rudimentary comparison of out-sample forecast accuracy between our current bridge-sarimax implementation and a balanced-data  VAR (see here: sarimax and var). Specifically, we use data from Brazil to forecast real GDP growth and use realized and forecasted values several steps ahead to compute frequently used accuracy measures: RMSE, MAE, MASE and Theil's U. Since the code involved is written in Stata ans Excel, we cannot re-run those calculation in a R Markdown document and we are limited to just show tables and plots with those results.
+
+
+## First exercise: monthly data aligned with quarterly data
+
+### Set up
+
+
+- **Data** : quarterly and monthly data for Brazil, curated  by Pablo. This vintage includes quarterly  real GDP from 1997Q1 to 2017Q3, and monthly data, with some of it up to 2017M10  (that is, one month ahead of GDP).  Then we consider four subsamples:
+    1.  1997Q1 to 2015Q1  (and 2015M3 for monthly variables ... more on this later)
+    2.  1997Q1 to 2015Q2 (2015M6)
+    3.  1997Q1 to 2015Q3 (2015M6)
+    4.  1997Q1 to 2016Q1 (2015M6)   
+    
+    
+    
+-  **Forecasts** : quarterly YoY percentage changes of real gdp (e.g -2.1% for 2016Q2, 1,1% for 2016Q2, etc.). We haven't touch the sarimax legacy code and by default its forecast horizon is not fixed: it always forecasts up to the 4th quarter of the next year. That means the following set of predictions for each subsample:
+    1.  2015Q2 to 2016Q4 (7 forecasted values and 7 observations)
+    2.  2015Q3 to 2016Q4 (6 forecasted values and 6 observations)
+    3.  2015Q4 to 2016Q4 (5 forecasted values and 5 observations)
+    4.  2016Q2 to 2017Q4 (7 forecasted values and 6 observations up to 2017Q3)
+    
+
+
+
+- **Methods** : bridge-SARIMAX and a combination of six simple balanced-data VARs. These are described in separated posts (see here: sarimax and var) 
+    
+
+   
+- **Accuracy measures** : using out-of-subsample forecasts and actual data on the same period being forecasted, we construct the following statistics
+    - RMSE
+    - MAE
+    - MASE
+    - Theil's U
+   
+
+### Results
+
+```{r, echo=FALSE, message=FALSE, results='hide', include=FALSE}
+
+# theme = "hugo-lithium-theme"
+
+#library(knitr)
+library(kableExtra)
+library(dplyr)
+options(knitr.table.format = "html", knitr.kable.NA = '') 
+load("./../../varsarimaxcomp.rda") # loads compa_data
+pre_data_for_table <- compa_data[,-1]
+
+test_data_dates <- c("2015Q2:2016Q4  ", "2015Q3:2016Q4  ",
+               "2015Q4:2016Q4  ", "2016Q2:2017Q2  ")
+
+
+data_for_table <- cbind(test_data_dates, pre_data_for_table )
+
+
+data_for_table %>% mutate( VAR = cell_spec(VAR, "html", color = "red", bold = T))
+
+```
+
+
+General comments: Overall, VARs seem to be more robust and reliable. For all but the last test period VARs show smaller forecast errors --in all three measures-- than SARIMAX. In that last test period, SARIMAX has a slightly smaller RMSE and is basically tied with VARs regarding MAE and Theil's U.
+
+This seems to be because the VARs perform bad in the first two quarters. From h=4,5 and 6 ahead they outperform the SARIMAX. Thus, the longer the test sample, the more opportunities there are for the VAR to outperform the SARIMAX.
+
+
+
+
+```{r, echo=FALSE, results='asis'}
+error_names <- c(" "," VAR ", " SARIMAX "," VAR ", " SARIMAX "," VAR ", 
+                         " SARIMAX "," VAR ", " SARIMAX ")
+
+error_names_no_mase <- c(" "," VAR ", " SARIMAX"," VAR ",  
+                         " SARIMAX "," VAR ", " SARIMAX ")
+
+table_caption <- 'Out-of-sample errors, VAR vs SARIMAX'
+
+
+# knitr::kable(data_for_table,
+#              digits = 1,
+#              escape = FALSE,
+#              caption = table_caption,
+#              align = 'c',
+#              padding = 2,
+#              col.names = error_names
+#       ) %>%
+#   kable_styling(font_size = 15, full_width = TRUE)  %>%
+#   column_spec(c(4,5,8,9), background = "grey") %>%
+#   column_spec(c(2,3,6,7), background = "#d3d3d3") %>%
+#   add_header_above(c(" " = 1, "RMSE" = 2, "MAE" = 2, "MASE" = 2,
+#                      "Theil's U" = 2))
+
+
+
+knitr::kable(data_for_table[,c(-6,-7)],
+             digits = 1,
+             escape = FALSE,
+             caption = table_caption,
+             align = 'c',
+             padding = 2,
+             col.names = error_names_no_mase,
+             table.attr='class="myTable"'
+      ) %>%
+  column_spec(c(2,3,6,7), background = "#d3d3d3") %>%
+  add_header_above(c(" " = 1, "RMSE" = 2, "MAE" = 2,
+                     "Theil's U" = 2))
+
+
+```
+
+
+foo
+
+
+```{r, echo=FALSE, results='asis'}
+error_names <- c(" "," VAR ", " SARIMAX "," VAR ", " SARIMAX "," VAR ", 
+                         " SARIMAX "," VAR ", " SARIMAX ")
+
+error_names_no_mase <- c(" "," VAR ", " SARIMAX"," VAR ",  
+                         " SARIMAX "," VAR ", " SARIMAX ")
+
+table_caption <- 'trying bootstrap options2'
+
+
+
+knitr::kable(data_for_table[,c(-6,-7)],
+             digits = 1,
+             escape = FALSE,
+             caption = table_caption,
+             align = 'c',
+             padding = 2,
+             col.names = error_names_no_mase
+      ) %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "responsive")) %>% 
+  add_header_above(c(" " = 1, "RMSE" = 2, "MAE" = 2,
+                     "Theil's U" = 2))
+
+
+```
+
+
+
+<style>
+  .myTable td {
+    padding-right: 20px;
+    padding-left: 20px;
+  }
+</style>
+
+
+
+
