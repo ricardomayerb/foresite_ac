@@ -141,18 +141,17 @@ table_caption <- 'trying bootstrap options2'
 data_for_table <-  data_for_table
 
 cs_data_for_table <-  data_for_table %>%  mutate(
-  VAR = cell_spec(VAR, color = ifelse(VAR > SARIMAX, "black", "blue")),
-  SARIMAX = cell_spec(SARIMAX, color = ifelse(SARIMAX > VAR, "black", "blue")),
-  VAR.1 = cell_spec(VAR.1, color = ifelse(SARIMAX.1 > VAR.1, "black", "blue")),
-  SARIMAX.1 = cell_spec(SARIMAX.1, color = ifelse(SARIMAX.1 > VAR.1, "black", "blue")),
-  VAR.2 = cell_spec(VAR.2, color = ifelse(SARIMAX.2 > VAR.2, "black", "blue")),
-  SARIMAX.2 = cell_spec(SARIMAX.2, color = ifelse(SARIMAX.2 > VAR.2, "black", "blue")),
-  VAR.3 = cell_spec(VAR.3, color = ifelse(SARIMAX.3 > VAR.3, "black", "blue")),
-  SARIMAX.3 = cell_spec(SARIMAX.3, color = ifelse(VAR.3 < SARIMAX.3, "black", "blue"))
+  VAR = cell_spec(round(VAR, digits = 2), color = ifelse(VAR > SARIMAX, "black", "blue")),
+  SARIMAX = cell_spec(round(SARIMAX, digits = 2), color = ifelse(SARIMAX > data_for_table$VAR, "black", "blue")),
+  VAR.1 = cell_spec(round(VAR.1, digits = 2), color = ifelse(VAR.1 > SARIMAX.1, "black", "blue")),
+  SARIMAX.1 = cell_spec(round(SARIMAX.1, digits = 2), color = ifelse(SARIMAX.1 > data_for_table$VAR.1, "black", "blue")),
+  VAR.2 = cell_spec(round(VAR.2, digits = 2), color = ifelse(VAR.2 > SARIMAX.2, "black", "blue")),
+  SARIMAX.2 = cell_spec(round(SARIMAX.2, digits = 2), color = ifelse(SARIMAX.2 > data_for_table$VAR.2, "black", "blue")),
+  VAR.3 = cell_spec(round(VAR.3, digits = 2), color = ifelse(VAR.3 > SARIMAX.3, "black", "blue")),
+  SARIMAX.3 = cell_spec(round(SARIMAX.3, digits = 2), color = ifelse(SARIMAX.3 > data_for_table$VAR.3, "black", "blue"))
   )
 
-knitr::kable(cs_data_for_table,
-             digits = 1,
+knitr::kable(cs_data_for_table, format = "html",
              escape = FALSE,
              caption = table_caption,
              align = 'c',
