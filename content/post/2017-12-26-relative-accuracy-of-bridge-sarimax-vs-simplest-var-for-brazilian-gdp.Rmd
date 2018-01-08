@@ -127,6 +127,8 @@ knitr::kable(data_for_table[,c(-6,-7)],
 foo
 
 
+
+
 ```{r, echo=FALSE, results='asis'}
 error_names <- c(" "," VAR ", " SARIMAX "," VAR ", " SARIMAX "," VAR ", 
                          " SARIMAX "," VAR ", " SARIMAX ")
@@ -136,18 +138,29 @@ error_names_no_mase <- c(" "," VAR ", " SARIMAX"," VAR ",
 
 table_caption <- 'trying bootstrap options2'
 
+data_for_table <-  data_for_table
 
+cs_data_for_table <-  data_for_table %>%  mutate(
+  VAR = cell_spec(VAR, color = ifelse(VAR > SARIMAX, "black", "blue")),
+  SARIMAX = cell_spec(SARIMAX, color = ifelse(SARIMAX > VAR, "black", "blue")),
+  VAR.1 = cell_spec(VAR.1, color = ifelse(SARIMAX.1 > VAR.1, "black", "blue")),
+  SARIMAX.1 = cell_spec(SARIMAX.1, color = ifelse(SARIMAX.1 > VAR.1, "black", "blue")),
+  VAR.2 = cell_spec(VAR.2, color = ifelse(SARIMAX.2 > VAR.2, "black", "blue")),
+  SARIMAX.2 = cell_spec(SARIMAX.2, color = ifelse(SARIMAX.2 > VAR.2, "black", "blue")),
+  VAR.3 = cell_spec(VAR.3, color = ifelse(SARIMAX.3 > VAR.3, "black", "blue")),
+  SARIMAX.3 = cell_spec(SARIMAX.3, color = ifelse(VAR.3 < SARIMAX.3, "black", "blue"))
+  )
 
-knitr::kable(data_for_table[,c(-6,-7)],
+knitr::kable(cs_data_for_table,
              digits = 1,
              escape = FALSE,
              caption = table_caption,
              align = 'c',
              padding = 2,
-             col.names = error_names_no_mase
+             col.names = error_names
       ) %>%
   kable_styling(bootstrap_options = c("striped", "hover", "responsive")) %>% 
-  add_header_above(c(" " = 1, "RMSE" = 2, "MAE" = 2,
+  add_header_above(c(" " = 1, "RMSE" = 2, "MAE" = 2, "MASE" = 2,
                      "Theil's U" = 2))
 
 
