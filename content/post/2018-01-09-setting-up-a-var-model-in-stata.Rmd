@@ -1,0 +1,28 @@
+---
+title: 'Setting up a VAR Model in Stata '
+author: Albert Klein
+date: '2018-01-09'
+slug: setting-up-a-var-model-in-stata
+categories:
+  - stata
+tags:
+  - VAR
+---
+
+
+
+## Starting Point
+
+The starting point of a VAR analysis is the unrestricted model, i.e. the reduced-form VAR, in which the modeler has not imposed any restrictions on the model. The reduced-form kth-order VAR can be denoted as follows:
+
+
+Equation 1
+
+
+
+
+
+
+
+
+
