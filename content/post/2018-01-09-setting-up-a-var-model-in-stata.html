@@ -1,0 +1,967 @@
+---
+title: 'Setting up a VAR Model in Stata '
+author: Albert Klein
+date: '2018-01-09'
+slug: setting-up-a-var-model-in-stata
+categories:
+  - stata
+tags:
+  - VAR
+---
+
+
+
+<div id="starting-point" class="section level2">
+<h2>Starting Point</h2>
+<p>The starting point of a VAR analysis is the unrestricted model, i.e. the reduced-form VAR, in which the modeler has not imposed any restrictions on the model. The reduced-form kth-order VAR can be denoted as follows :</p>
+<p>Equation 1</p>
+<p><span class="math display" id="eq:varst">\[\begin{equation}
+Y_t = \tau^{-1} \beta (L) Y_t +  \tau^{-1} e_t
+ \tag{1}
+\end{equation}\]</span></p>
+<p><span class="math display" id="eq:varredu">\[\begin{equation}
+Y_t = \beta^{*} (L) Y_t +  u_t
+ \tag{2}
+\end{equation}\]</span></p>
+<p>Where <span class="math inline">\(Y_t\)</span> is an <span class="math inline">\((N \times 1)\)</span> vector of <span class="math inline">\(K\)</span> endogenous variables, <span class="math inline">\(\tau^{-1}\)</span> is the inverse of the <span class="math inline">\((N \times N)\)</span> matrix of contemporaneous parameters, <span class="math inline">\(\beta(L)\)</span> is an <span class="math inline">\((N \times N)\)</span> matrix with the <span class="math inline">\(k\)</span>-lag polynomials, <span class="math inline">\(\beta^{*} (L) = \tau^{-1} \beta (L)\)</span>, <span class="math inline">\(e_t\)</span> is am <span class="math inline">\((N \times 1)\)</span> vector of structural shocks and <span class="math inline">\(u_t = \tau^{-1} e_t\)</span> which are reduced-form shocks with the following variance-covariance matrix: <span class="math inline">\(\Sigma_u = \tau^{-1} \Sigma_e \tau^{-1}\)</span>.</p>
+<div id="step-1-data-selection-n-variable-kth-order-reduced-form" class="section level3">
+<h3>Step 1: Data selection N-variable kth-order reduced-form</h3>
+<p>Of course, the first step would be to decide on which variables to include in <span class="math inline">\(Y_t\)</span> and on the frequency of the data. We have decided to first only work with variables within the current database that CEPAL uses for ARIMAX forecasts.</p>
+<p>The first thing we have to take into account is that the database consists of variables with different frequencies, namely quarterly data (see Table 1) and monthly data (see Table 2). Hence, before estimating the model we should convert all monthly data to quarterly data.</p>
+<table>
+<caption>
+<span id="tab:table1">Table 1: </span>Quarterly variables
+</caption>
+<thead>
+<tr>
+<th style="text-align:center;">
+Variable
+</th>
+<th style="text-align:center;">
+Defintion
+</th>
+<th style="text-align:center;">
+Period
+</th>
+<th style="text-align:center;">
+Source
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center;">
+rgdp
+</td>
+<td style="text-align:center;">
+</td>
+<td style="text-align:center;">
+1993q1 - 2017q1
+</td>
+<td style="text-align:center;">
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+rpc
+</td>
+<td style="text-align:center;">
+</td>
+<td style="text-align:center;">
+1993q1 - 2017q1
+</td>
+<td style="text-align:center;">
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+rgc
+</td>
+<td style="text-align:center;">
+</td>
+<td style="text-align:center;">
+1993q1 - 2017q1
+</td>
+<td style="text-align:center;">
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+ri
+</td>
+<td style="text-align:center;">
+</td>
+<td style="text-align:center;">
+1993q1 - 2017q1
+</td>
+<td style="text-align:center;">
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+rx
+</td>
+<td style="text-align:center;">
+</td>
+<td style="text-align:center;">
+1993q1 - 2017q1
+</td>
+<td style="text-align:center;">
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+rm
+</td>
+<td style="text-align:center;">
+</td>
+<td style="text-align:center;">
+1993q1 - 2017q1
+</td>
+<td style="text-align:center;">
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+primario
+</td>
+<td style="text-align:center;">
+</td>
+<td style="text-align:center;">
+</td>
+<td style="text-align:center;">
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+manuf
+</td>
+<td style="text-align:center;">
+</td>
+<td style="text-align:center;">
+</td>
+<td style="text-align:center;">
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+serv
+</td>
+<td style="text-align:center;">
+</td>
+<td style="text-align:center;">
+</td>
+<td style="text-align:center;">
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+rgdp_sa
+</td>
+<td style="text-align:center;">
+</td>
+<td style="text-align:center;">
+1993q1 - 2017q1
+</td>
+<td style="text-align:center;">
+</td>
+</tr>
+</tbody>
+</table>
+<table>
+<caption>
+<span id="tab:table1">Table 1: </span>Monthly variables
+</caption>
+<thead>
+<tr>
+<th style="text-align:center;">
+Variable
+</th>
+<th style="text-align:center;">
+Defintion
+</th>
+<th style="text-align:center;">
+Period
+</th>
+<th style="text-align:center;">
+Source
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center;">
+igae
+</td>
+<td style="text-align:center;">
+</td>
+<td style="text-align:center;">
+Jan 1993 - Aug 2016
+</td>
+<td style="text-align:center;">
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+retail
+</td>
+<td style="text-align:center;">
+</td>
+<td style="text-align:center;">
+Jan 2008 - Aug 2016
+</td>
+<td style="text-align:center;">
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+ip
+</td>
+<td style="text-align:center;">
+</td>
+<td style="text-align:center;">
+Jan 1993 - Sep 2016
+</td>
+<td style="text-align:center;">
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+ip_mineral
+</td>
+<td style="text-align:center;">
+</td>
+<td style="text-align:center;">
+Jan 1993 - Sep 2016
+</td>
+<td style="text-align:center;">
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+ip_energy
+</td>
+<td style="text-align:center;">
+</td>
+<td style="text-align:center;">
+Jan 1993 - Sep 2016
+</td>
+<td style="text-align:center;">
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+ip_construction
+</td>
+<td style="text-align:center;">
+</td>
+<td style="text-align:center;">
+Jan 1993 - Sep 2016
+</td>
+<td style="text-align:center;">
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+ip_manufacturing
+</td>
+<td style="text-align:center;">
+</td>
+<td style="text-align:center;">
+Jan 1993 - Sep 2016
+</td>
+<td style="text-align:center;">
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+finv
+</td>
+<td style="text-align:center;">
+</td>
+<td style="text-align:center;">
+Jan 1993 - Aug 2016
+</td>
+<td style="text-align:center;">
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+consumo
+</td>
+<td style="text-align:center;">
+</td>
+<td style="text-align:center;">
+Jan 1993 - Aug 2016
+</td>
+<td style="text-align:center;">
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+confianza_emp
+</td>
+<td style="text-align:center;">
+</td>
+<td style="text-align:center;">
+Jan 2004 - Oct 2016
+</td>
+<td style="text-align:center;">
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+confianza_con
+</td>
+<td style="text-align:center;">
+</td>
+<td style="text-align:center;">
+Apr 2001 - Oct 2016
+</td>
+<td style="text-align:center;">
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+p_exp
+</td>
+<td style="text-align:center;">
+</td>
+<td style="text-align:center;">
+Jan 1993 - Dec 2016
+</td>
+<td style="text-align:center;">
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+p_imp
+</td>
+<td style="text-align:center;">
+</td>
+<td style="text-align:center;">
+Jan 1993 - Dec 2016
+</td>
+<td style="text-align:center;">
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+tot
+</td>
+<td style="text-align:center;">
+</td>
+<td style="text-align:center;">
+Jan 1993 - Dec 2016
+</td>
+<td style="text-align:center;">
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+exp
+</td>
+<td style="text-align:center;">
+</td>
+<td style="text-align:center;">
+Jan 1993 - Sep 2016
+</td>
+<td style="text-align:center;">
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+exp_petro
+</td>
+<td style="text-align:center;">
+</td>
+<td style="text-align:center;">
+Jan 1993 - Sep 2016
+</td>
+<td style="text-align:center;">
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+imp
+</td>
+<td style="text-align:center;">
+</td>
+<td style="text-align:center;">
+Jan 1993 - Sep 2016
+</td>
+<td style="text-align:center;">
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+imp_consumer
+</td>
+<td style="text-align:center;">
+</td>
+<td style="text-align:center;">
+Jan 1993 - Sep 2016
+</td>
+<td style="text-align:center;">
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+imp_intermediate
+</td>
+<td style="text-align:center;">
+</td>
+<td style="text-align:center;">
+Jan 1993 - Sep 2016
+</td>
+<td style="text-align:center;">
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+imp_capital
+</td>
+<td style="text-align:center;">
+</td>
+<td style="text-align:center;">
+Jan 1993 - Sep 2016
+</td>
+<td style="text-align:center;">
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+ing_gob
+</td>
+<td style="text-align:center;">
+</td>
+<td style="text-align:center;">
+Jan 1993 - Sep 2016
+</td>
+<td style="text-align:center;">
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+gto_gob
+</td>
+<td style="text-align:center;">
+</td>
+<td style="text-align:center;">
+Jan 1993 - Sep 2016
+</td>
+<td style="text-align:center;">
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+remesa
+</td>
+<td style="text-align:center;">
+</td>
+<td style="text-align:center;">
+Jan 1995 - Sep 2016
+</td>
+<td style="text-align:center;">
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+cred
+</td>
+<td style="text-align:center;">
+</td>
+<td style="text-align:center;">
+Dec 1994 - Sep 2016
+</td>
+<td style="text-align:center;">
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+tcr
+</td>
+<td style="text-align:center;">
+</td>
+<td style="text-align:center;">
+Jan 1994 - Sep 2016
+</td>
+<td style="text-align:center;">
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+m1
+</td>
+<td style="text-align:center;">
+</td>
+<td style="text-align:center;">
+Jan 1993 - Sep 2016
+</td>
+<td style="text-align:center;">
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+m2
+</td>
+<td style="text-align:center;">
+</td>
+<td style="text-align:center;">
+Jan 1993 - Sep 2016
+</td>
+<td style="text-align:center;">
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+bolsa
+</td>
+<td style="text-align:center;">
+</td>
+<td style="text-align:center;">
+Jan 1993 - Oct 2016
+</td>
+<td style="text-align:center;">
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+cta_fin
+</td>
+<td style="text-align:center;">
+</td>
+<td style="text-align:center;">
+Feb 2000 - Sep 2016
+</td>
+<td style="text-align:center;">
+</td>
+</tr>
+</tbody>
+</table>
+<table>
+<caption>
+<span id="tab:table2">Table 2: </span>Monthly variables
+</caption>
+<thead>
+<tr>
+<th style="text-align:center;">
+Variable
+</th>
+<th style="text-align:center;">
+Defintion
+</th>
+<th style="text-align:center;">
+Period
+</th>
+<th style="text-align:center;">
+Source
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center;">
+igae
+</td>
+<td style="text-align:center;">
+</td>
+<td style="text-align:center;">
+Jan 1993 - Aug 2016
+</td>
+<td style="text-align:center;">
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+retail
+</td>
+<td style="text-align:center;">
+</td>
+<td style="text-align:center;">
+Jan 2008 - Aug 2016
+</td>
+<td style="text-align:center;">
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+ip
+</td>
+<td style="text-align:center;">
+</td>
+<td style="text-align:center;">
+Jan 1993 - Sep 2016
+</td>
+<td style="text-align:center;">
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+ip_mineral
+</td>
+<td style="text-align:center;">
+</td>
+<td style="text-align:center;">
+Jan 1993 - Sep 2016
+</td>
+<td style="text-align:center;">
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+ip_energy
+</td>
+<td style="text-align:center;">
+</td>
+<td style="text-align:center;">
+Jan 1993 - Sep 2016
+</td>
+<td style="text-align:center;">
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+ip_construction
+</td>
+<td style="text-align:center;">
+</td>
+<td style="text-align:center;">
+Jan 1993 - Sep 2016
+</td>
+<td style="text-align:center;">
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+ip_manufacturing
+</td>
+<td style="text-align:center;">
+</td>
+<td style="text-align:center;">
+Jan 1993 - Sep 2016
+</td>
+<td style="text-align:center;">
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+finv
+</td>
+<td style="text-align:center;">
+</td>
+<td style="text-align:center;">
+Jan 1993 - Aug 2016
+</td>
+<td style="text-align:center;">
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+consumo
+</td>
+<td style="text-align:center;">
+</td>
+<td style="text-align:center;">
+Jan 1993 - Aug 2016
+</td>
+<td style="text-align:center;">
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+confianza_emp
+</td>
+<td style="text-align:center;">
+</td>
+<td style="text-align:center;">
+Jan 2004 - Oct 2016
+</td>
+<td style="text-align:center;">
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+confianza_con
+</td>
+<td style="text-align:center;">
+</td>
+<td style="text-align:center;">
+Apr 2001 - Oct 2016
+</td>
+<td style="text-align:center;">
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+p_exp
+</td>
+<td style="text-align:center;">
+</td>
+<td style="text-align:center;">
+Jan 1993 - Dec 2016
+</td>
+<td style="text-align:center;">
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+p_imp
+</td>
+<td style="text-align:center;">
+</td>
+<td style="text-align:center;">
+Jan 1993 - Dec 2016
+</td>
+<td style="text-align:center;">
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+tot
+</td>
+<td style="text-align:center;">
+</td>
+<td style="text-align:center;">
+Jan 1993 - Dec 2016
+</td>
+<td style="text-align:center;">
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+exp
+</td>
+<td style="text-align:center;">
+</td>
+<td style="text-align:center;">
+Jan 1993 - Sep 2016
+</td>
+<td style="text-align:center;">
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+exp_petro
+</td>
+<td style="text-align:center;">
+</td>
+<td style="text-align:center;">
+Jan 1993 - Sep 2016
+</td>
+<td style="text-align:center;">
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+imp
+</td>
+<td style="text-align:center;">
+</td>
+<td style="text-align:center;">
+Jan 1993 - Sep 2016
+</td>
+<td style="text-align:center;">
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+imp_consumer
+</td>
+<td style="text-align:center;">
+</td>
+<td style="text-align:center;">
+Jan 1993 - Sep 2016
+</td>
+<td style="text-align:center;">
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+imp_intermediate
+</td>
+<td style="text-align:center;">
+</td>
+<td style="text-align:center;">
+Jan 1993 - Sep 2016
+</td>
+<td style="text-align:center;">
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+imp_capital
+</td>
+<td style="text-align:center;">
+</td>
+<td style="text-align:center;">
+Jan 1993 - Sep 2016
+</td>
+<td style="text-align:center;">
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+ing_gob
+</td>
+<td style="text-align:center;">
+</td>
+<td style="text-align:center;">
+Jan 1993 - Sep 2016
+</td>
+<td style="text-align:center;">
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+gto_gob
+</td>
+<td style="text-align:center;">
+</td>
+<td style="text-align:center;">
+Jan 1993 - Sep 2016
+</td>
+<td style="text-align:center;">
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+remesa
+</td>
+<td style="text-align:center;">
+</td>
+<td style="text-align:center;">
+Jan 1995 - Sep 2016
+</td>
+<td style="text-align:center;">
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+cred
+</td>
+<td style="text-align:center;">
+</td>
+<td style="text-align:center;">
+Dec 1994 - Sep 2016
+</td>
+<td style="text-align:center;">
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+tcr
+</td>
+<td style="text-align:center;">
+</td>
+<td style="text-align:center;">
+Jan 1994 - Sep 2016
+</td>
+<td style="text-align:center;">
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+m1
+</td>
+<td style="text-align:center;">
+</td>
+<td style="text-align:center;">
+Jan 1993 - Sep 2016
+</td>
+<td style="text-align:center;">
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+m2
+</td>
+<td style="text-align:center;">
+</td>
+<td style="text-align:center;">
+Jan 1993 - Sep 2016
+</td>
+<td style="text-align:center;">
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+bolsa
+</td>
+<td style="text-align:center;">
+</td>
+<td style="text-align:center;">
+Jan 1993 - Oct 2016
+</td>
+<td style="text-align:center;">
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+cta_fin
+</td>
+<td style="text-align:center;">
+</td>
+<td style="text-align:center;">
+Feb 2000 - Sep 2016
+</td>
+<td style="text-align:center;">
+</td>
+</tr>
+</tbody>
+</table>
+<p>Secondly, we have to decide whether we have to transform the data, for example to first differences. I assume we are going to work with first-differences?</p>
+</div>
+<div id="step-2-test-for-stationarity-augmented-dickey-fuller-adf-test." class="section level3">
+<h3>Step 2: Test for stationarity, augmented Dickey-Fuller (ADF) test.</h3>
+<p>After we decided on the N-variables to include in the VAR we should run an ADF test on each variables in order to determine whether the variables are a stationary I(0) process or a non-stationary I(1) process. A notion must be made that the ADF-test has one significant disadvantage. That is, it models the time-series either as a full non-stationary unit root process or as a full stationary process. This strict assumption implies that fractionally integrated series, i.e. those series that are close to a non-stationary unit root process, are frequently misjudged as a unit root process (see e.g. Cochrane, 1991; Diebold and Rudebusch, 1991).</p>
+<pre><code>Stata command: 
+dfuller varname [if] [in] [, options]
+Options: - noconstant    suppress constant term in regression, -  trend         include trend term in regression, - drift         include drift term in regression, - regress       display regression table, -  lags(#)       include # lagged differences.</code></pre>
+</div>
+<div id="step-3-number-of-lags-to-include-in-the-var" class="section level3">
+<h3>Step 3: Number of lags to include in the VAR</h3>
+<p>After we have decided on the N-variables to include and dealt we the stationarity issues, we should determine the number of k-lags to include. For this purpose we should do a lag-test.</p>
+<pre><code>The varsoc command gives you a battery of lag-order selection tests.</code></pre>
+</div>
+<div id="step-4-stability-of-the-var" class="section level3">
+<h3>Step 4: Stability of the VAR</h3>
+<p>After we have obtained the number of lags we have to examine whether the VAR is stable. This condition is satisfied if and only if all inverse roots of the determinant of the characteristic polynomial have a modulus &lt;|1|. If the VAR is stable (see command varstable) we can rewrite the VAR in moving average from as explained in the next step.</p>
+<pre><code>Stata command: 
+varstable [, options]
+Options: estimates(estname): use previously stored results estname default is to use active results, - amat(matrix_name);  save the companion matrix as matrix_name, - graph; graph eigenvalues of the companion matrix, - dlabel; label eigenvalues with the distance from the unit circle, - modlabel;                 label eigenvalues with the modulus, marker_options; change look of markers (color, size, etc.), -rlopts(cline_options); affect rendition of reference unit circle, - nogrid; suppress polar grid circles, - pgrid([...]); specify radii and appearance of polar grid circles.</code></pre>
+</div>
+<div id="step-5-if-we-want-to-turn-it-into-an-svar-the-final-step-would-be-the-identification-of-the-structural-shocks." class="section level3">
+<h3>Step 5: If we want to turn it into an SVAR, the final step would be the identification of the structural shocks.</h3>
+<p>The reduced-form VAR in (G2) is represented in the conventional autoregressive (AR) representation. In the AR representation, a set of N time-series are modeled as a function of their past values. However, equation (G2) cannot be used for structural economic inference due to two reasons. First, equation (G2) is written as a function of past values of the variables, but in order to analyze structural shocks, we must rewrite <span class="math inline">\(Y_t\)</span> as a function of current and past shocks of the variables. This can be achieved by writing the VAR in its moving average (MA) representation:</p>
+<p><span class="math display" id="eq:ma">\[\begin{equation}
+(1-\beta^*(L))Y_t = u_t
+ \tag{3}
+\end{equation}\]</span></p>
+<p><span class="math display" id="eq:prema">\[\begin{equation}
+Y_t = (1-\beta^*(L))^{-1} u_t
+ \tag{4}
+\end{equation}\]</span></p>
+<p>Note that in the step from equation (G3) to equation (G4), I took the inverse of <span class="math inline">\((1-\beta^*(L))\)</span>. This step is only possible if <span class="math inline">\((1-\beta^*(L))\)</span> is invertible (i.e. non-singular). Furthermore, equation (G4) is stable if and only if all inverse roots of the determinant of the characteristic polynomial <span class="math inline">\(\Pi(\lambda) = (1-\beta^{*}_{k} \lambda^{k})\)</span> have a modulus <span class="math inline">\(&lt;|1|\)</span> <a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a>. In other words, the kth-VAR is stable, if and only if, all inverse roots of <span class="math inline">\(det(\Pi(\lambda) )\)</span> 0 lie on the complex unit circle. This condition is required to make sure that the structural shocks peter-out in the long run (we have tested for this in step 4). Moreover, note that a stable VAR-process is always stationary but that an unstable process can also be stationary.</p>
+<p>Second, equation (G2), and equation (G4) as well, only consists of reduced shocks. These shocks are devoid of any economic content and can therefore not be used for economic inference. We can cope with this issue by rewriting the model such that it is expressed as a function of current and past structural shocks. For this transformation we make use of the condition that <span class="math inline">\(\tau u_t = e_t\)</span> and write:</p>
+<p><span class="math display">\[\begin{align*}
+Y_t &amp; = C(L) u_t \quad \Rightarrow \\
+\tau^{-1} \tau Y_t &amp; = C(L) \tau^{-1} \tau u_t  \quad \Rightarrow \\
+Y_t &amp; = C^{*}(L) e_t
+\end{align*}\]</span></p>
+<p>where <span class="math inline">\(C(L) = (1-\beta^{*}(L))^{-1}\)</span> and <span class="math inline">\(C^{*}(L) = (1-\beta^{*}(L))^{-1} \tau^{-1}\)</span>. The <span class="math inline">\(N\)</span>-variable <span class="math inline">\(k\)</span>th-order VAR is now modeled in its MA representation and <span class="math inline">\(Y_t\)</span> is now written as a function of current and past structural shocks. Nonetheless, the model is not ready yet to construct and interpret the IRFs because in order to compute <span class="math inline">\(C^* (L)\)</span>, which contain the impulse response functions to the structural shocks, the matrix of the contemporaneous parameters, <span class="math inline">\(\tau\)</span>, must be known.</p>
+<p>In order to identify <span class="math inline">\(\tau\)</span>, we must impose identifying restrictions. The first identifying restriction is a general restriction that must be satisfied in a general <span class="math inline">\(N\)</span>-variable <span class="math inline">\(k\)</span>th-order VAR and that is the orthogonality assumption of the structural shocks. Orthogonality implies that the structural shocks are uncorrelated. In other words, only one type of structural shock occurs at the time and there cannot be a commingling of shocks. Technically, this implies that the covariances, presented on the off-diagonal elements of <span class="math inline">\(\Sigma_{\theta}\)</span>, are all zero <a href="#fn2" class="footnoteRef" id="fnref2"><sup>2</sup></a> . To understand how this imposes one non-linear restriction on <span class="math inline">\(\tau\)</span>, recall that the reduced-form shocks and structural shocks are linked by <span class="math inline">\(\tau u_t=e_t\)</span>, and that the variance-covariance matrix of the reduced-form shocks and the structural shocks are related through: <span class="math inline">\(\Sigma_{\theta} = \tau \Sigma_u \tau^{&#39;}\)</span> . Hence, you can see that the orthogonality restriction imposed on <span class="math inline">\(\Sigma_{\theta}\)</span>. Induces one non-linear restriction on <span class="math inline">\(\tau\)</span>. An important remark must be made that the orthogonality assumption only implies that the structural shocks are uncorrelated, and it does not imply that the structural shocks only enter their own structural equation. Structural shocks are still allowed to enter other structural equations <a href="#fn3" class="footnoteRef" id="fnref3"><sup>3</sup></a></p>
+<p>Besides the orthogonality restriction we still need to impose <span class="math inline">\(n^2-n \times \frac{(n+1)}{2} = n \times \frac{(n-1)}{2}\)</span> restrictions on the matrix <span class="math inline">\(\tau\)</span> in order to identify the model. As with all structural modeling, the identification should be done based on economic theory and a helpful tool in determining these restriction is a Granger-causality test. The latter test helps with determining the contemporaneous links between the variables. If one variable is said to granger-cause the other this implies that this variable leads the other in time. The results from these tests can be used as rationale to order the contemporaneous links.</p>
+<pre><code>Stata commands:
+With the command svar you can impose many short-run and long-run restrictions in stata. I have attached the help file in the document. 
+The vargranger post estimation command performs a battery of Granger causality tests. As before, equations are distinguished by their dependent variable. For each equation, vargranger tests for the Granger causality of each variable in the VAR individually, then tests for the Granger causality of all added variables jointly. </code></pre>
+</div>
+</div>
+<div class="footnotes">
+<hr />
+<ol>
+<li id="fn1"><p>Note that by using a restricted VAR, a so-called Vector Autoregressive Correction (VECM) model, we can incorporate time-series that are I(1) as well by making the cointegration relations explicit. Moreover, non-stationary variables can often be transformed to stationary series by taking first-differences. However, I do not consider first-differencing as a desirable option because this method leads to a loss of valuable information.<a href="#fnref1">↩</a></p></li>
+<li id="fn2"><p>Note that I apply another general transformation of the variance-covariance matrix and that is normalization. This imposes not a restriction but only functions as a practical way to generate one standard deviation structural shocks.<a href="#fnref2">↩</a></p></li>
+<li id="fn3"><p>The interested reader is referred to Bernanke (1986) who clearly explains the implications of the orthogonality assumption.<a href="#fnref3">↩</a></p></li>
+</ol>
+</div>

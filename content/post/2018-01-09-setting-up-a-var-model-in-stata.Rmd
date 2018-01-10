@@ -13,16 +13,25 @@ tags:
 
 ## Starting Point
 
-The starting point of a VAR analysis is the unrestricted model, i.e. the reduced-form VAR, in which the modeler has not imposed any restrictions on the model. The reduced-form kth-order VAR can be denoted as follows:
+
+The starting point of a VAR analysis is the unrestricted model, i.e. the reduced-form VAR, in which the modeler has not imposed any restrictions on the model. The reduced-form kth-order VAR can be denoted as follows :
 
 
 Equation 1
 
-$$Y_t = \tau^{-1} \beta (L) Y_t +  \tau^{-1} e_t$$
+
+
+$$\begin{equation}
+Y_t = \tau^{-1} \beta (L) Y_t +  \tau^{-1} e_t
+ (\#eq:varst)
+\end{equation}$$
 
 
 
-$$Y_t = \beta^{*} (L) Y_t +  u_t$$
+$$\begin{equation}
+Y_t = \beta^{*} (L) Y_t +  u_t
+ (\#eq:varredu)
+\end{equation}$$
 
 Where $Y_t$ is an $(N \times 1)$ vector of $K$ endogenous variables, $\tau^{-1}$ is the inverse of the $(N \times N)$ matrix of contemporaneous parameters, $\beta(L)$ is an $(N \times N)$ matrix with the $k$-lag polynomials, $\beta^{*} (L) = \tau^{-1} \beta  (L)$, $e_t$ is am $(N \times 1)$ vector of structural shocks and $u_t = \tau^{-1} e_t$ which are reduced-form shocks with the following variance-covariance matrix: $\Sigma_u = \tau^{-1} \Sigma_e \tau^{-1}$.
 
@@ -30,8 +39,128 @@ Where $Y_t$ is an $(N \times 1)$ vector of $K$ endogenous variables, $\tau^{-1}$
 
 
 Of course, the first step would be to decide on which variables to include in $Y_t$ and on the frequency of the data. We have decided to first only work with variables within the current database that CEPAL uses for ARIMAX forecasts. 
+
 The first thing we have to take into account is that the database consists of variables with different frequencies, namely quarterly data (see Table 1) and monthly data (see Table 2). Hence, before estimating the model we should convert all monthly data to quarterly data. 
 
+```{r setup, include=FALSE}
+options(knitr.table.format = "html", knitr.kable.NA = '') 
+library(docxtractr)
+library(knitr)
+library(kableExtra)
+library(dplyr)
+```
+
+```{r table1, echo=FALSE}
+thedoc <- docxtractr::read_docx("./../../Setting_up_a_VAR_Model_in_Stata.docx")
+
+btable1 <- docxtractr::docx_extract_tbl(thedoc, tbl_number = 1)
+btable2 <- docxtractr::docx_extract_tbl(thedoc, tbl_number = 2)
+
+table1_caption <- "Quarterly variables"
+table2_caption <- "Monthly variables"
+
+knitr::kable(btable1, 
+             escape = FALSE,
+             caption = table1_caption,
+             align = 'c'
+      )
+
+
+knitr::kable(btable2, 
+             escape = FALSE,
+             caption = table2_caption,
+             align = 'c'
+      )
+
+```
+
+```{r table2, echo=FALSE}
+knitr::kable(btable2, 
+             escape = FALSE,
+             caption = table2_caption,
+             align = 'c'
+      )
+
+```
+
+Secondly, we have to decide whether we have to transform the data, for example to first differences. I assume we are going to work with first-differences?
+
+
+### Step 2: Test for stationarity, augmented Dickey-Fuller (ADF) test. 
+
+
+After we decided on the N-variables to include in the VAR we should run an ADF test on each variables in order to determine whether the variables are a stationary I(0) process or a non-stationary I(1) process. A notion must be made that the ADF-test has one significant disadvantage. That is, it models the time-series either as a full non-stationary unit root process or as a full stationary process. This strict assumption implies that fractionally integrated series, i.e. those series that are close to a non-stationary unit root process, are frequently misjudged as a unit root process (see e.g. Cochrane, 1991; Diebold and Rudebusch, 1991).
+
+```
+Stata command: 
+dfuller varname [if] [in] [, options]
+Options: - noconstant    suppress constant term in regression, -  trend         include trend term in regression, - drift         include drift term in regression, - regress       display regression table, -  lags(#)       include # lagged differences.
+```
+
+
+
+### Step 3: Number of lags to include in the VAR
+
+After we have decided on the N-variables to include and dealt we the stationarity issues, we should determine the number of k-lags to include. For this purpose we should do a lag-test. 
+
+```
+The varsoc command gives you a battery of lag-order selection tests.
+```
+
+### Step 4: Stability of the VAR
+
+After we have obtained the number of lags we have to examine whether the VAR is stable. This condition is satisfied if and only if all inverse roots of the determinant of the characteristic polynomial have a modulus <|1|. 
+If the VAR is stable (see command varstable) we can rewrite the VAR in moving average from as explained in the next step. 
+
+
+```
+Stata command: 
+varstable [, options]
+Options: estimates(estname): use previously stored results estname default is to use active results, - amat(matrix_name);  save the companion matrix as matrix_name, - graph; graph eigenvalues of the companion matrix, - dlabel; label eigenvalues with the distance from the unit circle, - modlabel;                 label eigenvalues with the modulus, marker_options; change look of markers (color, size, etc.), -rlopts(cline_options); affect rendition of reference unit circle, - nogrid; suppress polar grid circles, - pgrid([...]); specify radii and appearance of polar grid circles.
+```
+
+### Step 5: If we want to turn it into an SVAR, the final step would be the identification of the structural shocks. 
+
+
+The reduced-form VAR in (G2) is represented in the conventional autoregressive (AR) representation. In the AR representation, a set of N time-series are modeled as a function of their past values. However, equation (G2) cannot be used for structural economic inference due to two reasons. First, equation (G2) is written as a function of past values of the variables, but in order to analyze structural shocks, we must rewrite $Y_t$ as a function of current and past shocks of the variables. This can be achieved by writing the VAR in its moving average (MA) representation:
+
+$$\begin{equation}
+(1-\beta^*(L))Y_t = u_t
+ (\#eq:ma)
+\end{equation}$$
+
+$$\begin{equation}
+Y_t = (1-\beta^*(L))^{-1} u_t
+ (\#eq:prema)
+\end{equation}$$
+
+Note that in the step from equation (G3) to equation (G4), I took the inverse of $(1-\beta^*(L))$. This step is only possible if $(1-\beta^*(L))$ is invertible (i.e. non-singular). Furthermore, equation (G4) is stable if and only if all inverse roots of the determinant of the characteristic polynomial $\Pi(\lambda) = (1-\beta^{*}_{k} \lambda^{k})$ have a modulus $<|1|$ ^[Note that by using a restricted VAR, a so-called Vector Autoregressive Correction (VECM) model, we can incorporate time-series that are I(1) as well by making the cointegration relations explicit. Moreover, non-stationary variables can often be transformed to stationary series by taking first-differences. However, I do not consider first-differencing as a desirable option because this method leads to a loss of valuable information.]. In other words, the kth-VAR is stable, if and only if, all inverse roots of $det(\Pi(\lambda) )$ 0 lie on the complex unit circle. This condition is required to make sure that the structural shocks peter-out in the long run (we have tested for this in step 4). Moreover, note that a stable VAR-process is always stationary but that an unstable process can also be stationary. 
+
+
+
+Second, equation (G2), and equation (G4) as well, only consists of reduced shocks. These shocks are devoid of any economic content and can therefore not be used for economic inference. We can cope with this issue by rewriting the model such that it is expressed as a function of current and past structural shocks. For this transformation we make use of the condition that $\tau u_t = e_t$ and write:
+
+
+$$\begin{align*}
+Y_t & = C(L) u_t \quad \Rightarrow \\
+\tau^{-1} \tau Y_t & = C(L) \tau^{-1} \tau u_t  \quad \Rightarrow \\
+Y_t & = C^{*}(L) e_t
+\end{align*}$$
+
+where $C(L) = (1-\beta^{*}(L))^{-1}$ and $C^{*}(L) = (1-\beta^{*}(L))^{-1} \tau^{-1}$. The $N$-variable $k$th-order VAR is now modeled in its MA representation and $Y_t$ is now written as a function of current and past structural shocks. Nonetheless, the model is not ready yet to construct and interpret the IRFs because in order to compute $C^* (L)$, which contain the impulse response functions to the structural shocks, the matrix of the contemporaneous parameters, $\tau$, must be known. 
+
+
+In order to identify $\tau$, we must impose identifying restrictions. The first identifying restriction is a general restriction that must be satisfied in a general $N$-variable $k$th-order VAR and that is the orthogonality assumption of the structural shocks. Orthogonality implies that the structural shocks are uncorrelated. In other words, only one type of structural shock occurs at the time and there cannot be a commingling of shocks. Technically, this implies that the covariances, presented on the off-diagonal elements of $\Sigma_{\theta}$, are all zero ^[Note that I apply another general transformation of the variance-covariance matrix and that is normalization. This imposes not a restriction but only functions as a practical way to generate one standard deviation structural shocks.] . To understand how this imposes one non-linear restriction on $\tau$, recall that the reduced-form shocks and structural shocks are linked by $\tau u_t=e_t$, and that the variance-covariance matrix of the reduced-form shocks and the structural shocks are related through: $\Sigma_{\theta} = \tau \Sigma_u \tau^{'}$ . Hence, you can see that the orthogonality restriction imposed on $\Sigma_{\theta}$. Induces one non-linear restriction on $\tau$. An important remark must be made that the orthogonality assumption only implies that the structural shocks are uncorrelated, and it does not imply that the structural shocks only enter their own structural equation. Structural shocks are still allowed to enter other structural equations ^[The interested reader is referred to Bernanke (1986) who clearly explains the implications of the orthogonality assumption.]
+
+
+Besides the orthogonality restriction we still need to impose $n^2-n \times \frac{(n+1)}{2} = n \times \frac{(n-1)}{2}$   restrictions on the matrix $\tau$ in order to identify the model. As with all structural modeling, the identification should be done based on economic theory and a helpful tool in determining these restriction is a Granger-causality test. The latter test helps with determining the contemporaneous links between the variables. If one variable is said to granger-cause the other this implies that this variable leads the other in time. The results from these tests can be used as rationale to order the contemporaneous links.
+
+
+```
+Stata commands:
+With the command svar you can impose many short-run and long-run restrictions in stata. I have attached the help file in the document. 
+The vargranger post estimation command performs a battery of Granger causality tests. As before, equations are distinguished by their dependent variable. For each equation, vargranger tests for the Granger causality of each variable in the VAR individually, then tests for the Granger causality of all added variables jointly. 
+```
 
 
 
