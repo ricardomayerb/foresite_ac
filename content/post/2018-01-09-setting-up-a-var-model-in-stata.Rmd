@@ -18,10 +18,19 @@ The starting point of a VAR analysis is the unrestricted model, i.e. the reduced
 
 Equation 1
 
+$$Y_t = \tau^{-1} \beta (L) Y_t +  \tau^{-1} e_t$$
 
 
 
+$$Y_t = \beta^{*} (L) Y_t +  u_t$$
 
+Where $Y_t$ is an $(N \times 1)$ vector of $K$ endogenous variables, $\tau^{-1}$ is the inverse of the $(N \times N)$ matrix of contemporaneous parameters, $\beta(L)$ is an $(N \times N)$ matrix with the $k$-lag polynomials, $\beta^{*} (L) = \tau^{-1} \beta  (L)$, $e_t$ is am $(N \times 1)$ vector of structural shocks and $u_t = \tau^{-1} e_t$ which are reduced-form shocks with the following variance-covariance matrix: $\Sigma_u = \tau^{-1} \Sigma_e \tau^{-1}$.
+
+### Step 1: Data selection N-variable kth-order reduced-form
+
+
+Of course, the first step would be to decide on which variables to include in $Y_t$ and on the frequency of the data. We have decided to first only work with variables within the current database that CEPAL uses for ARIMAX forecasts. 
+The first thing we have to take into account is that the database consists of variables with different frequencies, namely quarterly data (see Table 1) and monthly data (see Table 2). Hence, before estimating the model we should convert all monthly data to quarterly data. 
 
 
 
