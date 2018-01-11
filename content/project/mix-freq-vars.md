@@ -1,6 +1,6 @@
 +++
 # Date this page was created.
-date = "2016-04-27"
+date = "2018-01-04"
 
 # Project title.
 title = "Mixed frequency VARs"
@@ -13,7 +13,7 @@ image_preview = "bubbles.jpg"
 
 # Tags: can be used for filtering projects.
 # Example: `tags = ["machine-learning", "deep-learning"]`
-tags = ["deep-learning"]
+tags = ["mix-frequecy", "VAR"]
 
 # Optional external URL for project (replaces project detail page).
 external_link = ""

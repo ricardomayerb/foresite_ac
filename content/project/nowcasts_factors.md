@@ -1,9 +1,9 @@
 +++
 # Date this page was created.
-date = "2016-04-27"
+date = "2018-01-11"
 
 # Project title.
-title = "Mixed frequency sARIMAx"
+title = "Factor models with principal components"
 
 # Project summary to display on homepage.
 summary = "Lorem ipsum dolor sit amet, consectetur adipiscing elit."
@@ -12,8 +12,8 @@ summary = "Lorem ipsum dolor sit amet, consectetur adipiscing elit."
 image_preview = "bubbles.jpg"
 
 # Tags: can be used for filtering projects.
-# Example: `tags = ["time-series", "arima"]`
-tags = ["arima", "mix-frequency"]
+# Example: `tags = ["machine-learning", "deep-learning"]`
+tags = ["PCA, factor"]
 
 # Optional external URL for project (replaces project detail page).
 external_link = ""
