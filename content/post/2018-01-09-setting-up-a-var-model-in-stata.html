@@ -27,10 +27,10 @@ Y_t = \beta^{*} (L) Y_t +  u_t
 <div id="step-1-data-selection-n-variable-kth-order-reduced-form" class="section level3">
 <h3>Step 1: Data selection N-variable kth-order reduced-form</h3>
 <p>Of course, the first step would be to decide on which variables to include in <span class="math inline">\(Y_t\)</span> and on the frequency of the data. We have decided to first only work with variables within the current database that CEPAL uses for ARIMAX forecasts.</p>
-<p>The first thing we have to take into account is that the database consists of variables with different frequencies, namely quarterly data (see Table 1) and monthly data (see Table 2). Hence, before estimating the model we should convert all monthly data to quarterly data.</p>
+<p>The first thing we have to take into account is that the database consists of variables with different frequencies, namely quarterly data (see @ref(tab:table_q_variables)) and monthly data (see @ref(tab:table_m_variables) ). Hence, before estimating the model we should convert all monthly data to quarterly data.</p>
 <table>
 <caption>
-<span id="tab:table1">Table 1: </span>Quarterly variables
+(#tab:table_q_variables)Quarterly variables
 </caption>
 <thead>
 <tr>
@@ -170,7 +170,7 @@ rgdp_sa
 </table>
 <table>
 <caption>
-<span id="tab:table1">Table 1: </span>Monthly variables
+(#tab:table_q_variables)Monthly variables
 </caption>
 <thead>
 <tr>
@@ -541,7 +541,7 @@ Feb 2000 - Sep 2016
 </table>
 <table>
 <caption>
-<span id="tab:table2">Table 2: </span>Monthly variables
+(#tab:table_m_variables)Monthly variables
 </caption>
 <thead>
 <tr>
@@ -926,14 +926,14 @@ Options: - noconstant    suppress constant term in regression, -  trend         
 </div>
 <div id="step-4-stability-of-the-var" class="section level3">
 <h3>Step 4: Stability of the VAR</h3>
-<p>After we have obtained the number of lags we have to examine whether the VAR is stable. This condition is satisfied if and only if all inverse roots of the determinant of the characteristic polynomial have a modulus &lt;|1|. If the VAR is stable (see command varstable) we can rewrite the VAR in moving average from as explained in the next step.</p>
+<p>After we have obtained the number of lags we have to examine whether the VAR is stable. This condition is satisfied if and only if all inverse roots of the determinant of the characteristic polynomial have a modulus <span class="math inline">\(&lt;|1|\)</span>. If the VAR is stable (see command varstable) we can rewrite the VAR in moving average from as explained in the next step.</p>
 <pre><code>Stata command: 
 varstable [, options]
 Options: estimates(estname): use previously stored results estname default is to use active results, - amat(matrix_name);  save the companion matrix as matrix_name, - graph; graph eigenvalues of the companion matrix, - dlabel; label eigenvalues with the distance from the unit circle, - modlabel;                 label eigenvalues with the modulus, marker_options; change look of markers (color, size, etc.), -rlopts(cline_options); affect rendition of reference unit circle, - nogrid; suppress polar grid circles, - pgrid([...]); specify radii and appearance of polar grid circles.</code></pre>
 </div>
 <div id="step-5-if-we-want-to-turn-it-into-an-svar-the-final-step-would-be-the-identification-of-the-structural-shocks." class="section level3">
 <h3>Step 5: If we want to turn it into an SVAR, the final step would be the identification of the structural shocks.</h3>
-<p>The reduced-form VAR in (G2) is represented in the conventional autoregressive (AR) representation. In the AR representation, a set of N time-series are modeled as a function of their past values. However, equation (G2) cannot be used for structural economic inference due to two reasons. First, equation (G2) is written as a function of past values of the variables, but in order to analyze structural shocks, we must rewrite <span class="math inline">\(Y_t\)</span> as a function of current and past shocks of the variables. This can be achieved by writing the VAR in its moving average (MA) representation:</p>
+<p>The reduced-form VAR in <a href="#eq:varredu">(2)</a> is represented in the conventional autoregressive (AR) representation. In the AR representation, a set of N time-series are modeled as a function of their past values. However, equation <a href="#eq:varredu">(2)</a> cannot be used for structural economic inference due to two reasons. First, equation <a href="#eq:varredu">(2)</a> is written as a function of past values of the variables, but in order to analyze structural shocks, we must rewrite <span class="math inline">\(Y_t\)</span> as a function of current and past shocks of the variables. This can be achieved by writing the VAR in its moving average (MA) representation:</p>
 <p><span class="math display" id="eq:ma">\[\begin{equation}
 (1-\beta^*(L))Y_t = u_t
  \tag{3}
@@ -942,8 +942,8 @@ Options: estimates(estname): use previously stored results estname default is to
 Y_t = (1-\beta^*(L))^{-1} u_t
  \tag{4}
 \end{equation}\]</span></p>
-<p>Note that in the step from equation (G3) to equation (G4), I took the inverse of <span class="math inline">\((1-\beta^*(L))\)</span>. This step is only possible if <span class="math inline">\((1-\beta^*(L))\)</span> is invertible (i.e. non-singular). Furthermore, equation (G4) is stable if and only if all inverse roots of the determinant of the characteristic polynomial <span class="math inline">\(\Pi(\lambda) = (1-\beta^{*}_{k} \lambda^{k})\)</span> have a modulus <span class="math inline">\(&lt;|1|\)</span> <a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a>. In other words, the kth-VAR is stable, if and only if, all inverse roots of <span class="math inline">\(det(\Pi(\lambda) )\)</span> 0 lie on the complex unit circle. This condition is required to make sure that the structural shocks peter-out in the long run (we have tested for this in step 4). Moreover, note that a stable VAR-process is always stationary but that an unstable process can also be stationary.</p>
-<p>Second, equation (G2), and equation (G4) as well, only consists of reduced shocks. These shocks are devoid of any economic content and can therefore not be used for economic inference. We can cope with this issue by rewriting the model such that it is expressed as a function of current and past structural shocks. For this transformation we make use of the condition that <span class="math inline">\(\tau u_t = e_t\)</span> and write:</p>
+<p>Note that in the step from equation <a href="#eq:ma">(3)</a> to equation <a href="#eq:prema">(4)</a> , I took the inverse of <span class="math inline">\((1-\beta^*(L))\)</span>. This step is only possible if <span class="math inline">\((1-\beta^*(L))\)</span> is invertible (i.e. non-singular). Furthermore, equation <a href="#eq:prema">(4)</a> is stable if and only if all inverse roots of the determinant of the characteristic polynomial <span class="math inline">\(\Pi(\lambda) = (1-\beta^{*}_{k} \lambda^{k})\)</span> have a modulus <span class="math inline">\(&lt;|1|\)</span> <a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a>. In other words, the kth-VAR is stable, if and only if, all inverse roots of <span class="math inline">\(det(\Pi(\lambda) )\)</span> 0 lie on the complex unit circle. This condition is required to make sure that the structural shocks peter-out in the long run (we have tested for this in step 4). Moreover, note that a stable VAR-process is always stationary but that an unstable process can also be stationary.</p>
+<p>Second, equation <a href="#eq:varredu">(2)</a> , and equation <a href="#eq:prema">(4)</a> as well, only consists of reduced shocks. These shocks are devoid of any economic content and can therefore not be used for economic inference. We can cope with this issue by rewriting the model such that it is expressed as a function of current and past structural shocks. For this transformation we make use of the condition that <span class="math inline">\(\tau u_t = e_t\)</span> and write:</p>
 <p><span class="math display">\[\begin{align*}
 Y_t &amp; = C(L) u_t \quad \Rightarrow \\
 \tau^{-1} \tau Y_t &amp; = C(L) \tau^{-1} \tau u_t  \quad \Rightarrow \\

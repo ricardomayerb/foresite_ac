@@ -40,7 +40,7 @@ Where $Y_t$ is an $(N \times 1)$ vector of $K$ endogenous variables, $\tau^{-1}$
 
 Of course, the first step would be to decide on which variables to include in $Y_t$ and on the frequency of the data. We have decided to first only work with variables within the current database that CEPAL uses for ARIMAX forecasts. 
 
-The first thing we have to take into account is that the database consists of variables with different frequencies, namely quarterly data (see Table 1) and monthly data (see Table 2). Hence, before estimating the model we should convert all monthly data to quarterly data. 
+The first thing we have to take into account is that the database consists of variables with different frequencies, namely quarterly data (see \@ref(tab:table_q_variables)) and monthly data (see \@ref(tab:table_m_variables) ). Hence, before estimating the model we should convert all monthly data to quarterly data. 
 
 ```{r setup, include=FALSE}
 options(knitr.table.format = "html", knitr.kable.NA = '') 
@@ -50,7 +50,7 @@ library(kableExtra)
 library(dplyr)
 ```
 
-```{r table1, echo=FALSE}
+```{r table_q_variables, echo=FALSE}
 thedoc <- docxtractr::read_docx("./../../Setting_up_a_VAR_Model_in_Stata.docx")
 
 btable1 <- docxtractr::docx_extract_tbl(thedoc, tbl_number = 1)
@@ -74,7 +74,7 @@ knitr::kable(btable2,
 
 ```
 
-```{r table2, echo=FALSE}
+```{r table_m_variables, echo=FALSE}
 knitr::kable(btable2, 
              escape = FALSE,
              caption = table2_caption,
@@ -109,7 +109,7 @@ The varsoc command gives you a battery of lag-order selection tests.
 
 ### Step 4: Stability of the VAR
 
-After we have obtained the number of lags we have to examine whether the VAR is stable. This condition is satisfied if and only if all inverse roots of the determinant of the characteristic polynomial have a modulus <|1|. 
+After we have obtained the number of lags we have to examine whether the VAR is stable. This condition is satisfied if and only if all inverse roots of the determinant of the characteristic polynomial have a modulus $<|1|$. 
 If the VAR is stable (see command varstable) we can rewrite the VAR in moving average from as explained in the next step. 
 
 
@@ -122,7 +122,7 @@ Options: estimates(estname): use previously stored results estname default is to
 ### Step 5: If we want to turn it into an SVAR, the final step would be the identification of the structural shocks. 
 
 
-The reduced-form VAR in (G2) is represented in the conventional autoregressive (AR) representation. In the AR representation, a set of N time-series are modeled as a function of their past values. However, equation (G2) cannot be used for structural economic inference due to two reasons. First, equation (G2) is written as a function of past values of the variables, but in order to analyze structural shocks, we must rewrite $Y_t$ as a function of current and past shocks of the variables. This can be achieved by writing the VAR in its moving average (MA) representation:
+The reduced-form VAR in \@ref(eq:varredu) is represented in the conventional autoregressive (AR) representation. In the AR representation, a set of N time-series are modeled as a function of their past values. However, equation  \@ref(eq:varredu) cannot be used for structural economic inference due to two reasons. First, equation  \@ref(eq:varredu) is written as a function of past values of the variables, but in order to analyze structural shocks, we must rewrite $Y_t$ as a function of current and past shocks of the variables. This can be achieved by writing the VAR in its moving average (MA) representation:
 
 $$\begin{equation}
 (1-\beta^*(L))Y_t = u_t
@@ -134,11 +134,11 @@ Y_t = (1-\beta^*(L))^{-1} u_t
  (\#eq:prema)
 \end{equation}$$
 
-Note that in the step from equation (G3) to equation (G4), I took the inverse of $(1-\beta^*(L))$. This step is only possible if $(1-\beta^*(L))$ is invertible (i.e. non-singular). Furthermore, equation (G4) is stable if and only if all inverse roots of the determinant of the characteristic polynomial $\Pi(\lambda) = (1-\beta^{*}_{k} \lambda^{k})$ have a modulus $<|1|$ ^[Note that by using a restricted VAR, a so-called Vector Autoregressive Correction (VECM) model, we can incorporate time-series that are I(1) as well by making the cointegration relations explicit. Moreover, non-stationary variables can often be transformed to stationary series by taking first-differences. However, I do not consider first-differencing as a desirable option because this method leads to a loss of valuable information.]. In other words, the kth-VAR is stable, if and only if, all inverse roots of $det(\Pi(\lambda) )$ 0 lie on the complex unit circle. This condition is required to make sure that the structural shocks peter-out in the long run (we have tested for this in step 4). Moreover, note that a stable VAR-process is always stationary but that an unstable process can also be stationary. 
+Note that in the step from equation  \@ref(eq:ma) to equation  \@ref(eq:prema) , I took the inverse of $(1-\beta^*(L))$. This step is only possible if $(1-\beta^*(L))$ is invertible (i.e. non-singular). Furthermore, equation \@ref(eq:prema)  is stable if and only if all inverse roots of the determinant of the characteristic polynomial $\Pi(\lambda) = (1-\beta^{*}_{k} \lambda^{k})$ have a modulus $<|1|$ ^[Note that by using a restricted VAR, a so-called Vector Autoregressive Correction (VECM) model, we can incorporate time-series that are I(1) as well by making the cointegration relations explicit. Moreover, non-stationary variables can often be transformed to stationary series by taking first-differences. However, I do not consider first-differencing as a desirable option because this method leads to a loss of valuable information.]. In other words, the kth-VAR is stable, if and only if, all inverse roots of $det(\Pi(\lambda) )$ 0 lie on the complex unit circle. This condition is required to make sure that the structural shocks peter-out in the long run (we have tested for this in step 4). Moreover, note that a stable VAR-process is always stationary but that an unstable process can also be stationary. 
 
 
 
-Second, equation (G2), and equation (G4) as well, only consists of reduced shocks. These shocks are devoid of any economic content and can therefore not be used for economic inference. We can cope with this issue by rewriting the model such that it is expressed as a function of current and past structural shocks. For this transformation we make use of the condition that $\tau u_t = e_t$ and write:
+Second, equation \@ref(eq:varredu) , and equation \@ref(eq:prema)  as well, only consists of reduced shocks. These shocks are devoid of any economic content and can therefore not be used for economic inference. We can cope with this issue by rewriting the model such that it is expressed as a function of current and past structural shocks. For this transformation we make use of the condition that $\tau u_t = e_t$ and write:
 
 
 $$\begin{align*}
